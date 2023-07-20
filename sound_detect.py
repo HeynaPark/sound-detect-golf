@@ -7,22 +7,16 @@ import matplotlib.pyplot as plt
 
 
 def convert_mp4_to_wav(mp4_file_path, wav_file_path):
-    # Load the video clip
     video = VideoFileClip(mp4_file_path)
-
-    # Extract the audio from the video clip
     audio = video.audio
-
-    # Save the audio as a WAV file
     audio.write_audiofile(wav_file_path)
 
-    # Close the video and audio clips to release resources
     audio.close()
     video.close()
 
 
 def detect_golf_ball_strike(audio_data, sample_rate, target_freq_range, threshold_energy):
-    # 타격 소리를 감지할 주파수 범위 설정
+
     min_freq, max_freq = target_freq_range
     freq_mask = (min_freq <= np.abs(librosa.stft(audio_data)) * sample_rate) & \
                 (np.abs(librosa.stft(audio_data)) * sample_rate <= max_freq)
@@ -37,52 +31,69 @@ def detect_golf_ball_strike(audio_data, sample_rate, target_freq_range, threshol
         return False
 
 
-def detect_impact_sounds(audio_file_path, threshold_db=-30, min_duration=0.1):
-    # Load the audio file
+def detect_impact_sounds(audio_file_path, threshold_db=-30, min_duration=0.3):
+    print("threshold_db", threshold_db)
     audio_data, sample_rate = librosa.load(audio_file_path, sr=None)
     print("sample rate", sample_rate)
-    # Get the duration of the audio in seconds
-    audio_duration = librosa.get_duration(y=audio_data, sr=sample_rate)
 
-    # Calculate the amplitude in decibels
+    audio_duration = librosa.get_duration(y=audio_data, sr=sample_rate)
     amplitude_db = librosa.amplitude_to_db(audio_data)
 
-    # Find the time points where the amplitude exceeds the threshold
     impact_time_points = []
     start_time = 0
     for i in range(1, len(amplitude_db)):
-        if amplitude_db[i] >= threshold_db:
+        if amplitude_db[i] >= threshold_db:  # 타격음 발생
             if not impact_time_points:
                 start_time = i / sample_rate
+                print("start_time", start_time)
             impact_time_points.append(i / sample_rate)
-            # print('check1')
-        else:
-            # print('check2')
+
+        else:       # 타격음 끝남
             if impact_time_points:
+                print("있었는데")
                 duration = impact_time_points[-1] - start_time
+                print(f"duration : {duration:.5f}")
                 if duration >= min_duration:
                     print(
                         f"Impact sound detected at {start_time:.2f} seconds, Duration: {duration:.2f} seconds")
                 impact_time_points = []
 
-    # Plot the waveform
-    plt.figure(figsize=(10, 4))
+    spectrogram = librosa.stft(audio_data)
+
+    # Plot both waveform and spectrogram
+    plt.figure(figsize=(12, 8))
+
+    plt.subplot(2, 1, 1)
     librosa.display.waveshow(audio_data, sr=sample_rate)
     plt.xlabel("Time (seconds)")
     plt.ylabel("Amplitude")
     plt.title(
         f"Waveform of Audio File: {audio_file_path}\nDuration: {audio_duration:.2f} seconds")
+
+    plt.subplot(2, 1, 2)
+    librosa.display.specshow(librosa.amplitude_to_db(
+        spectrogram), sr=sample_rate, x_axis='time', y_axis='hz')
+    plt.colorbar(format='%+2.0f dB')
+    plt.xlabel("Time (seconds)")
+    plt.ylabel("Frequency (Hz)")
+    plt.title("Spectrogram")
+
     plt.tight_layout()
     plt.show()
+
+    # Plot the waveform
+    # plt.figure(figsize=(10, 4))
+    # librosa.display.waveshow(audio_data, sr=sample_rate)
+    # plt.xlabel("Time (seconds)")
+    # plt.ylabel("Amplitude")
+    # plt.title(
+    #     f"Waveform of Audio File: {audio_file_path}\nDuration: {audio_duration:.2f} seconds")
+    # plt.tight_layout()
+    # plt.show()
 
     time_data = np.arange(len(audio_data)) / float(sample_rate)
     whole_time = len(audio_data) / float(sample_rate)
     amplitude_data = audio_data
-
-    for t, amp in zip(time_data[:], amplitude_data[:]):
-        if 10.7 < t and t < 10.8:
-            if abs(amp) > 0.5:
-                print(f"Time: {t: .6f} seconds, Amplitude: {amp:.6f}")
 
 
 def convert_seconds_to_minutes(seconds):
@@ -92,16 +103,11 @@ def convert_seconds_to_minutes(seconds):
 
 
 def plot_waveform(audio_file_path):
-    # Load the audio file
     audio_data, sample_rate = librosa.load(audio_file_path, sr=None)
-
-    # Get the duration of the audio in seconds
     audio_duration = librosa.get_duration(y=audio_data, sr=sample_rate)
 
-    # Create a time axis for the waveform
     time = librosa.times_like(audio_data, sr=sample_rate)
 
-    # Plot the waveform
     plt.figure(figsize=(10, 4))
     librosa.display.waveshow(audio_data, sr=sample_rate)
     plt.xlabel("Time (seconds)")
@@ -116,4 +122,4 @@ if __name__ == "__main__":
     audio_file_path = "short_audio.wav"  # Replace with the path to your audio file
     # plot_waveform(audio_file_path)
 
-    detect_impact_sounds(audio_file_path, threshold_db=-30, min_duration=0.1)
+    detect_impact_sounds(audio_file_path, threshold_db=-2, min_duration=0.1)
