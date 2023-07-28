@@ -87,19 +87,26 @@ def denoise_nr(audio_file_path):
     return audio_data_denoised
 
 
+def trans_fft(audio_file_path):
+    sampling_rate, audio_signal = wavfile.read(audio_file_path)
+
+
 def detect_impact_sounds(audio_file_path, threshold_db=-30):
     print("threshold_db", threshold_db)
     audio_data, sample_rate = librosa.load(audio_file_path, sr=None)
+
+    trans_fft(audio_file_path)
 
     # denoising
     audio_data_denoised = audio_data
     # audio_data_denoised = denoise_pywt(audio_data)
     # audio_data_denoised = denoise_nr(audio_file_path)
 
-    # print("sample rate", sample_rate)
+    print("sample rate", sample_rate)
 
     audio_duration = librosa.get_duration(y=audio_data, sr=sample_rate)
     amplitude_db = librosa.amplitude_to_db(audio_data_denoised)
+    print("amp len", len(amplitude_db))
     # amplitude_db = librosa.amplitude_to_db(audio_data)
 
     max_duration = 1
