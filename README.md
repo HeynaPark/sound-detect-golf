@@ -19,4 +19,10 @@ Module for finding the hitting point of the golf ball
 
 ## high pass filter
 
-![hpf_600hz](https://github.com/HeynaPark/sound_detect_golf/assets/90448406/11bde263-0d2c-44dc-b0fb-f7198d755a02)
+![video_1060_1160_timeCut_hpf_0 89](https://github.com/HeynaPark/sound_detect_golf/assets/90448406/6b452bfd-6a53-481c-8f0e-df15ce8dbfe7)
+
+
+
+## band pass filter
+
+![video_1060_1160_timeCut_bpf_0 74](https://github.com/HeynaPark/sound_detect_golf/assets/90448406/446e03eb-c89e-45cb-b5f3-c045d1df3c6e)
